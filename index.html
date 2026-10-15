@@ -793,16 +793,16 @@ const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){retu
 
 // ── 지도 ─────────────────────────────────────────────
 const map=L.map('map').setView(CENTER,16);
-// 지도 그림: 키 없이 쓸 수 있는 서버들. 오른쪽 위에서 바꿀 수 있고, 실패가 이어지면 다음 서버로 자동 전환
+// 지도 그림: 키 없이 쓸 수 있는 서버들(웹 주소로 열 때 OSM 기본이 가장 안정적). 오른쪽 위에서 바꿀 수 있고, 실패가 이어지면 다음 서버로 자동 전환
 const TILES=[
-  {name:'일반 지도 (Esri)',url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',opt:{maxZoom:19,attribution:'Tiles &copy; Esri · 경로 데이터 &copy; OpenStreetMap contributors'}},
+  {name:'OSM 기본',url:'https://tile.openstreetmap.org/{z}/{x}/{y}.png',opt:{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}},
   {name:'위성 사진 (Esri)',url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',opt:{maxZoom:19,attribution:'Tiles &copy; Esri · 경로 데이터 &copy; OpenStreetMap contributors'}},
-  {name:'지형 (OpenTopoMap)',url:'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',opt:{maxZoom:17,attribution:'&copy; OpenStreetMap contributors, SRTM · &copy; OpenTopoMap (CC-BY-SA)'}},
-  {name:'OSM 기본',url:'https://tile.openstreetmap.org/{z}/{x}/{y}.png',opt:{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}}
+  {name:'지형 (OpenTopoMap)',url:'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',opt:{maxZoom:19,maxNativeZoom:17,attribution:'&copy; OpenStreetMap contributors, SRTM · &copy; OpenTopoMap (CC-BY-SA)'}},
+  {name:'일반 지도 (Esri)',url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',opt:{maxZoom:19,maxNativeZoom:15,attribution:'Tiles &copy; Esri · 경로 데이터 &copy; OpenStreetMap contributors'}}
 ];
 const tileLayers=TILES.map(t=>L.tileLayer(t.url,t.opt));
 let tileIdx=0,tileErr=0;
-tileLayers.forEach((tl,i)=>tl.on('tileerror',()=>{if(i!==tileIdx)return;if(++tileErr===6){const next={0:2,1:2,2:3}[i];if(next!==undefined){map.removeLayer(tl);useTiles(next)}else hint('지도 그림을 불러오지 못했습니다. 인터넷 연결을 확인하세요. 경로 계산은 계속 됩니다.')}}));
+tileLayers.forEach((tl,i)=>tl.on('tileerror',()=>{if(i!==tileIdx)return;if(++tileErr===6){const next={0:1,1:2,2:3}[i];if(next!==undefined){map.removeLayer(tl);useTiles(next)}else hint('지도 그림을 불러오지 못했습니다. 인터넷 연결을 확인하세요. 경로 계산은 계속 됩니다.')}}));
 function useTiles(i){tileIdx=i;tileErr=0;tileLayers[i].addTo(map)}
 useTiles(0);
 L.control.layers(Object.fromEntries(TILES.map((t,i)=>[t.name,tileLayers[i]])),null,{position:'topright'}).addTo(map);

@@ -214,10 +214,24 @@ function build(){
   user.edges.forEach((e,i)=>{const a=nearest(e.a),b=nearest(e.b);if(!a||!b||a.id===b.id)return;addEdge(a.id,b.id,{len:e.len??dist(e.a,e.b),stairs:e.type==='stairs',kind:'knu',ref:i,climb:e.climb||0,aId:a.id})});
   applyElevation();matchBuildings();
   if(lmap){drawOsmWays();drawUser();drawOsmBuildings()}
-  status(`보행로 ${ways}개 · 계단 ${steps}개 · 교차점 ${gn.size}개 · 이름 있는 장소 ${places.length}곳 · 강원대생 길 ${user.edges.length}개 · 고도점 ${user.pins.length}개`+(ways===0?'<br><b>보행로가 없습니다.</b> "다시 받기"를 눌러 보세요.':''));
+  status(`보행로 ${ways}개 · 계단 ${steps}개 · 교차점 ${gn.size}개 · 이름 있는 장소 ${places.length}곳 · 강원대생 길 ${user.edges.length}개 · 고도점 ${user.pins.length}개 · 고도 ${eleSource()||'없음'}`+(ways===0?'<br><b>보행로가 없습니다.</b> "다시 받기"를 눌러 보세요.':''));
 }
 function nearest(p){let best=null,bd=Infinity;if(!graph)return null;for(const [id,n] of graph.nodes){const d=dist(p,n);if(d<bd){bd=d;best=id}}return best?{id:best,d:bd}:null}
-function applyElevation(){const pins=user.pins;for(const n of graph.nodes.values()){if(pins.length<2){n.ele=null;continue}let w=0,s=0,ex=null;for(const p of pins){const d=dist(n,p);if(d<1){ex=p.ele;break}const k=1/(d*d);w+=k;s+=k*p.ele}n.ele=ex??s/w}}
+// ── 지형 고도(자동): Open-Meteo 고도 API(Copernicus DEM 90m)로 캠퍼스를 20×20 격자로 받아 보간 ──
+const LS_DEM='knu_dem_v1',DEM_N=20;let dem=store.get(LS_DEM);
+async function fetchDem(){
+  const pts=[];for(let i=0;i<DEM_N;i++)for(let j=0;j<DEM_N;j++)pts.push([BBOX[0]+(BBOX[2]-BBOX[0])*i/(DEM_N-1),BBOX[1]+(BBOX[3]-BBOX[1])*j/(DEM_N-1)]);
+  try{const out=[];for(let k=0;k<pts.length;k+=100){const c=pts.slice(k,k+100);
+      const res=await fetch('https://api.open-meteo.com/v1/elevation?latitude='+c.map(p=>p[0].toFixed(5)).join(',')+'&longitude='+c.map(p=>p[1].toFixed(5)).join(','));
+      if(!res.ok)throw new Error('HTTP '+res.status);const j=await res.json();if(!Array.isArray(j.elevation)||j.elevation.length!==c.length)throw new Error('형식 오류');out.push(...j.elevation)}
+    dem={n:DEM_N,bbox:BBOX,ele:out};store.set(LS_DEM,dem);if(graph)build()}
+  catch(e){console.warn('고도 자료를 받지 못함',e)}
+}
+function demAt(p){if(!dem)return null;const n=dem.n,b=dem.bbox,fi=(p.lat-b[0])/(b[2]-b[0])*(n-1),fj=(p.lng-b[1])/(b[3]-b[1])*(n-1);
+  if(fi<0||fj<0||fi>n-1||fj>n-1)return null;const i=Math.min(n-2,Math.floor(fi)),j=Math.min(n-2,Math.floor(fj)),u=fi-i,v=fj-j,E=(a,c)=>dem.ele[a*n+c];
+  return E(i,j)*(1-u)*(1-v)+E(i+1,j)*u*(1-v)+E(i,j+1)*(1-u)*v+E(i+1,j+1)*u*v}
+function eleSource(){return user.pins.length>=2?'현장 고도점':dem?'지형 자료(90m 격자, 대략값)':null}
+function applyElevation(){const pins=user.pins;for(const n of graph.nodes.values()){if(pins.length<2){n.ele=demAt(n);continue}let w=0,s=0,ex=null;for(const p of pins){const d=dist(n,p);if(d<1){ex=p.ele;break}const k=1/(d*d);w+=k;s+=k*p.ele}n.ele=ex??s/w}}
 
 // ── 조원 건물 48곳 ↔ OSM 위치 연결 ──
 const norm=s=>String(s).replace(/강원대학교|강원대|국립/g,'').replace(/[\s()·\-_.,]/g,'').toLowerCase();
@@ -263,7 +277,7 @@ function showRoute(){
   const P=params(),sp=dijkstra(na.id,nb.id,(u,e)=>e.len),ep=dijkstra(na.id,nb.id,(u,e)=>edgeTime(u,e,P));
   const meta=document.getElementById('routeMeta');meta.classList.add('show');
   if(!sp||!ep){document.getElementById('routeSteps').textContent='두 장소를 잇는 보행로가 OSM에 없습니다. 팀 작업용 도구에서 강원대생 길을 추가해 연결해 보세요.';return}
-  const S=summarize(sp,P),E=summarize(ep,P),noEle=user.pins.length<2&&!user.edges.some(e=>e.climb);
+  const S=summarize(sp,P),E=summarize(ep,P),noEle=!eleSource()&&!user.edges.some(e=>e.climb);
   const fill=(p,r)=>{document.getElementById(p+'D').textContent=fmtM(r.len);document.getElementById(p+'T').textContent=fmtT(r.time);document.getElementById(p+'C').textContent=noEle?'자료 없음':fmtM(r.climb);document.getElementById(p+'S').textContent=r.stairs+'곳'};
   fill('s',S);fill('e',E);
   const line=st=>{const pts=[graph.nodes.get(st[0].from)];st.forEach(s=>pts.push(graph.nodes.get(s.to)));return pts.map(n=>[n.lat,n.lng])};
@@ -272,8 +286,8 @@ function showRoute(){
   L.polyline(line(ep),{color:'#0878d1',weight:5,opacity:.95}).addTo(layers.route);
   [[pa,'#1677cc','출발 · '+a.name],[pb,'#e44e5e','도착 · '+b.name]].forEach(([p,c,t])=>L.circleMarker([p.lat,p.lng],{radius:9,color:'#fff',weight:3,fillColor:c,fillOpacity:1}).bindTooltip(t,{permanent:true,direction:'top',offset:[0,-8]}).addTo(layers.route));
   const used=[...new Set(sp.concat(ep).filter(s=>s.e.kind==='knu').map(s=>user.edges[s.e.ref]?.name).filter(Boolean))];
-  let note=same?'두 경로가 같습니다. 이 구간에서는 최단 경로가 곧 효율 경로입니다.':`효율 경로는 ${Math.round(E.len-S.len)}m 더 걷지만 예상 시간이 ${Math.round(S.time-E.time)}초 짧습니다.`;
-  if(noEle)note+=' 아직 고도 자료가 없어 오르막은 반영되지 않았습니다.';
+  let note=same?'두 경로가 같습니다. 이 구간에서는 최단 경로가 곧 효율 경로입니다.':(Math.round(E.len-S.len)>0?`효율 경로는 ${Math.round(E.len-S.len)}m 더 걷지만`:'효율 경로는 거리가 같지만 오르막이 적어')+` 예상 시간이 ${Math.round(S.time-E.time)}초 짧습니다.`;
+  if(noEle)note+=' 아직 고도 자료가 없어 오르막은 반영되지 않았습니다.';else if(same&&!used.length)note+=' OSM 보행로 중에는 오르막을 피해 갈 우회로가 없다는 뜻입니다. 건물 안 통로 같은 강원대생 길을 추가하면 달라질 수 있습니다.';if(!noEle&&!user.pins.length)note+=' (고도는 90m 격자 지형 자료라 계단·짧은 경사는 잡지 못합니다.)';
   if(used.length)note+=' 사용한 강원대생 길: '+used.join(', ')+'.';
   const est=[a,b].filter(d=>locState(d)==='est').map(d=>d.name);if(est.length)note+=' ⚠ '+est.join(', ')+' 위치는 추정값입니다.';
   if(warn.length)note+=' ⚠ '+warn.join(', ')+'.';
@@ -322,6 +336,6 @@ document.getElementById('importUser').onchange=e=>readFile(e.target,d=>{if(!d||!
 
 // ── 시작 ──
 renderNodes();updateRouteLabels();drawUser();
-osm=store.get(LS_OSM);if(osm)build();else fetchOsm();
+osm=store.get(LS_OSM);if(osm)build();else fetchOsm();if(!dem)fetchDem();
 </script>
 </body></html>

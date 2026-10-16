@@ -127,7 +127,7 @@ function updateRouteLabels(){const a=byId(startId),b=byId(endId);document.getEle
 function renderNodes(){nodes.innerHTML='';data.forEach(d=>{const g=document.createElementNS('http://www.w3.org/2000/svg','g');let cls='building';if(selected===d.id)cls+=' selected';if(startId===d.id)cls+=' start';if(endId===d.id)cls+=' end';g.setAttribute('class',cls);g.setAttribute('transform','translate('+d.x+' '+d.y+')');g.setAttribute('tabindex','0');g.setAttribute('role','button');g.setAttribute('aria-label',d.name+' 경로 선택');g.innerHTML='<rect x="-13" y="-11" width="26" height="22"></rect>';g.addEventListener('click',()=>chooseLocation(d));g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();chooseLocation(d)}});nodes.appendChild(g)})}
 const LOC_TEXT={osm:'실제 위치 연결됨',est:'실제 위치 추정',man:'실제 위치 직접 지정',none:'실제 위치 없음'};
 function showInfo(d){selected=d.id;renderNodes();const floors=d.floors||[];const ls=locState(d);
-  document.getElementById('info').innerHTML='<span class="tag">'+esc(d.category)+' · '+(d.id==='후문'?'출입구':'건물 '+esc(d.id))+'</span><h3>'+esc(d.name)+'</h3><p>강원대학교 춘천캠퍼스 <span class="locstate ls-'+ls+'">'+LOC_TEXT[ls]+'</span></p><ul class="floors">'+floors.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul><div class="info-actions"><button id="infoSetStart">출발지로 설정</button><button id="infoSetEnd">도착지로 설정</button><button id="infoZoom">확대해서 보기</button><button id="infoPlace">실제 위치 지정</button></div>';
+  document.getElementById('info').innerHTML='<span class="tag">'+esc(d.category)+' · '+(d.id==='후문'?'출입구':'건물 '+esc(d.id))+'</span><h3>'+esc(d.name)+'</h3><p>강원대학교 춘천캠퍼스 <span class="locstate ls-'+ls+'">'+LOC_TEXT[ls]+'</span>'+(ls==='osm'&&auto[d.id].from?'<br><small>OSM \''+esc(auto[d.id].from)+'\'에 연결</small>':'')+'</p><ul class="floors">'+floors.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul><div class="info-actions"><button id="infoSetStart">출발지로 설정</button><button id="infoSetEnd">도착지로 설정</button><button id="infoZoom">확대해서 보기</button><button id="infoPlace">실제 위치 지정</button></div>';
   document.getElementById('infoSetStart').onclick=()=>assignPoint('start',d);document.getElementById('infoSetEnd').onclick=()=>assignPoint('end',d);
   document.getElementById('infoZoom').onclick=()=>{if(view==='osm'){const p=loc(d);if(p)lmap.setView([p.lat,p.lng],18)}else centerAt(d.x,d.y)};
   document.getElementById('infoPlace').onclick=()=>{setView('osm');setMode('place');placing=d;hint(d.name+'의 실제 위치(입구)를 지도에서 누르세요')};
@@ -147,6 +147,8 @@ const SNAP_WARN_M=40,LS_OSM='knu_osm_v1',LS_USER='knu_user_v1';
 const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 let osm=null,graph=null,places=[],view='illust',mode=null,pendingEdge=null,placing=null,lmap=null,layers=null;
 let user=Object.assign({edges:[],pins:[],places:{}},store.get(LS_USER)||{});
+// 팀이 현장에서 확인한 실제 위치(모든 방문자에게 적용). 값: id → [위도, 경도]
+const TEAM_PLACES={};
 const auto={};   // id → {lat,lng,src:'osm'|'est'}
 
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
@@ -157,7 +159,7 @@ function fmtM(m){return Math.round(m)+'m'}
 function fmtT(s){const m=Math.floor(s/60),r=Math.round(s%60);return m+'분 '+String(r).padStart(2,'0')+'초'}
 function download(name,obj){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(obj)],{type:'application/json'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 function readFile(input,cb){const f=input.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{cb(JSON.parse(r.result))}catch(e){alert('JSON 파일을 읽을 수 없습니다.')}input.value=''};r.readAsText(f)}
-function loc(d){const m=user.places[d.id];if(m)return{lat:m.lat,lng:m.lng,src:'man'};return auto[d.id]||null}
+function loc(d){const m=user.places[d.id];if(m)return{lat:m.lat,lng:m.lng,src:'man'};const t=TEAM_PLACES[d.id];if(t)return{lat:t[0],lng:t[1],src:'man'};return auto[d.id]||null}
 function locState(d){const p=loc(d);return p?p.src:'none'}
 
 // ── 화면 전환 ──
@@ -302,7 +304,7 @@ function setMode(m){mode=m;pendingEdge=null;if(m!=='place')placing=null;document
 document.querySelectorAll('.mode').forEach(b=>b.onclick=()=>{const m=mode===b.dataset.mode?null:b.dataset.mode;if(m)setView('osm');setMode(m)});
 function onMapClick(ev){
   const p={lat:ev.latlng.lat,lng:ev.latlng.lng};
-  if(mode==='place'&&placing){user.places[placing.id]=p;const d=placing;setMode(null);saveUser();showInfo(d);toast(d.name+'의 실제 위치를 저장했어요.');return}
+  if(mode==='place'&&placing){user.places[placing.id]=p;const d=placing;setMode(null);saveUser();showInfo(d);toast(d.name+'의 실제 위치를 저장했어요. ('+p.lat.toFixed(6)+', '+p.lng.toFixed(6)+')');return}
   if(mode==='pin'){const v=prompt('이 지점의 고도(m)를 입력하세요');if(v===null)return;const ele=parseFloat(v);if(isNaN(ele)){alert('숫자로 입력해 주세요.');return}user.pins.push({...p,ele});saveUser();return}
   if(mode==='edge'){if(!pendingEdge){pendingEdge=p;hint('끝점을 누르세요');return}
     const name=prompt('길 이름 (예: 6주 2층 통로)');if(!name){setMode(null);return}

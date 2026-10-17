@@ -18,6 +18,7 @@
 .map-area .map-label{z-index:5}
 .cmp{width:100%;border-collapse:collapse;font-size:11px;margin:6px 0 4px;background:#fff;border-radius:8px}
 .cmp th,.cmp td{border-bottom:1px solid #dbe6f0;padding:5px 4px;text-align:right;white-space:nowrap}
+.cmp td small{display:block;font-size:9px;color:#66758a;font-weight:400}
 .cmp th:first-child,.cmp td:first-child{text-align:left}
 .sw{display:inline-block;width:12px;height:4px;border-radius:2px;vertical-align:middle;margin-right:3px}
 .tools{border:1px solid var(--line);border-radius:15px;padding:4px 14px;background:#fff}
@@ -43,23 +44,22 @@
 <header class="topbar"><div class="brand"><svg class="mascot" viewBox="0 0 64 64" aria-label="곰두리 캐릭터"><circle cx="15" cy="15" r="10" fill="#78b9e7"/><circle cx="49" cy="15" r="10" fill="#78b9e7"/><circle cx="15" cy="15" r="5" fill="#f7c9b6"/><circle cx="49" cy="15" r="5" fill="#f7c9b6"/><ellipse cx="32" cy="34" rx="25" ry="24" fill="#58a8dd"/><ellipse cx="32" cy="38" rx="15" ry="13" fill="#fff"/><circle cx="24" cy="29" r="2.5" fill="#183754"/><circle cx="40" cy="29" r="2.5" fill="#183754"/><ellipse cx="32" cy="36" rx="4" ry="3" fill="#183754"/><path d="M28 42q4 4 8 0" fill="none" stroke="#183754" stroke-width="1.8" stroke-linecap="round"/><path d="M20 51q12 9 24 0" fill="none" stroke="#f8ca35" stroke-width="5" stroke-linecap="round"/></svg><div><h1>KNU 곰두리 스마트맵</h1><small>CHUNCHEON CAMPUS · DEMO v1.1</small></div></div><div class="top-actions"><button id="routeTop">↗ 길찾기</button><button id="resetView">⌖ 전체 보기</button></div></header>
 <main class="layout"><aside class="sidebar" id="sidebar"><button class="mobile-toggle" id="mobileToggle">지도 보기⌄</button><div class="sidebar-inner"><div class="search"><input id="search" placeholder="건물명 또는 번호 검색" autocomplete="off"><div id="results" class="search-results"></div></div>
 <div class="section-title">빠른 길찾기</div><section class="route-card"><h2>아이콘을 눌러 경로 설정</h2><div class="route-points"><span class="dot"></span><span id="fromLabel">공대 5호관 (103)</span><span class="dot end"></span><span id="toLabel">후문</span></div><div class="pickrow"><button class="pick-btn" id="pickStart">출발지 선택</button><button class="pick-btn active" id="pickEnd">도착지 선택</button></div><div class="route-buttons"><button class="primary" id="routeBtn">최단 vs 효율 비교</button><button class="secondary" id="routeClear">초기화</button></div><div class="route-meta" id="routeMeta"><b id="routeSummary">도보 경로</b>
-<table class="cmp"><thead><tr><th></th><th>거리</th><th>시간</th><th>오르막</th><th>계단</th></tr></thead><tbody>
-<tr><td><span class="sw" style="background:#8a96a6"></span>최단</td><td id="sD">-</td><td id="sT">-</td><td id="sC">-</td><td id="sS">-</td></tr>
-<tr><td><span class="sw" style="background:#0878d1"></span>효율</td><td id="eD">-</td><td id="eT">-</td><td id="eC">-</td><td id="eS">-</td></tr></tbody></table>
-<span id="routeSteps">-</span></div><p class="route-note">경로는 OpenStreetMap 실제 보행로 위에서 계산합니다. 시간·오르막은 현장 실측 전 추정값이며, 출입 가능 여부는 현장에서 확인해 주세요.</p></section>
+<table class="cmp"><thead><tr><th></th><th>거리</th><th>시간</th><th>계단</th></tr></thead><tbody>
+<tr><td><span class="sw" style="background:#8a96a6"></span>최단<small>지도 앱 길</small></td><td id="sD">-</td><td id="sT">-</td><td id="sS">-</td></tr>
+<tr><td><span class="sw" style="background:#0878d1"></span>효율<small>강원대생 길 포함</small></td><td id="eD">-</td><td id="eT">-</td><td id="eS">-</td></tr></tbody></table>
+<span id="routeSteps">-</span></div><p class="route-note">경로는 OpenStreetMap 실제 보행로 위에서 계산합니다. 시간은 현장 실측 전 추정값이며, 출입 가능 여부는 현장에서 확인해 주세요.</p></section>
 <div class="section-title">선택한 장소</div><section class="info-card" id="info"><span class="tag">건물을 눌러 보세요</span><h3>강원대학교 춘천캠퍼스</h3><p>지도에서 건물 번호를 누르면 공개된 층별 시설 정보를 볼 수 있습니다. 확대·이동도 가능합니다.</p></section>
 <div class="section-title">지도 기능</div><div class="features"><div class="feature"><b>01</b> 건물 번호를 눌러 층별 정보 보기</div><div class="feature"><b>02</b> 검색창에서 건물명·번호 찾기</div><div class="feature"><b>03</b> 실제 지도에서 최단 vs 효율 경로 비교</div></div>
 <div class="section-title">팀 작업용 도구</div>
 <details class="tools" id="tools"><summary>효율 계산 값 · 현장 입력 · 데이터</summary>
   <h4>효율 계산 값 (가정값)</h4>
   <label class="param">보행속도 (m/s)<input type="number" step="0.05" id="pSpeed" value="1.3"></label>
-  <label class="param">오르막 1m당 추가 (초)<input type="number" step="0.5" id="pClimb" value="6"></label>
   <label class="param">계단 구간 시간 배율<input type="number" step="0.1" id="pStairs" value="2"></label>
-  <p class="tnote">오르막 6초/m = 네이스미스 규칙(10m당 1분). 내리막은 추가 시간 없음.</p>
+  <p class="tnote">효율 = 예상 시간. 계단 구간은 배율만큼 느리게 계산하고, 강원대생 길(건물 통과·지름길)을 함께 씁니다.</p>
   <h4>현장 입력 (실제 지도에서)</h4>
-  <div class="trow"><button class="tbtn mode" data-mode="edge">강원대생 길 추가</button><button class="tbtn mode" data-mode="pin">고도점 추가</button></div>
-  <p class="tnote">길: 시작점과 끝점을 차례로 누르면 가까운 보행로에 연결됩니다. 고도점: 현장에서 잰 고도(m). 2개 이상이면 오르막이 계산됩니다.</p>
-  <ul class="tlist" id="edgeList"></ul><ul class="tlist" id="pinList"></ul>
+  <div class="trow"><button class="tbtn mode" data-mode="edge">강원대생 길 추가</button></div>
+  <p class="tnote">길: 시작점과 끝점을 차례로 누르면 가까운 보행로에 연결됩니다.</p>
+  <ul class="tlist" id="edgeList"></ul>
   <div class="trow"><button class="tbtn" id="exportUser">입력 저장(JSON)</button><label class="tbtn">입력 불러오기<input type="file" id="importUser" accept=".json" hidden></label></div>
   <h4>OSM 데이터</h4>
   <div class="trow"><button class="tbtn" id="reloadOsm">다시 받기</button><button class="tbtn" id="exportOsm">저장(JSON)</button><label class="tbtn">불러오기<input type="file" id="importOsm" accept=".json" hidden></label></div>
@@ -146,7 +146,7 @@ const WALKABLE=new Set(['footway','path','steps','pedestrian','living_street','r
 const SNAP_WARN_M=40,LS_OSM='knu_osm_v1',LS_USER='knu_user_v1';
 const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 let osm=null,graph=null,places=[],view='illust',mode=null,pendingEdge=null,placing=null,lmap=null,layers=null;
-let user=Object.assign({edges:[],pins:[],places:{}},store.get(LS_USER)||{});
+let user=Object.assign({edges:[],places:{}},store.get(LS_USER)||{});delete user.pins;
 // 팀이 현장에서 확인한 실제 위치(모든 방문자에게 적용). 값: id → [위도, 경도]
 const TEAM_PLACES={};
 const auto={};   // id → {lat,lng,src:'osm'|'est'}
@@ -197,7 +197,7 @@ async function fetchOsm(){
 // ── 그래프 만들기 ──
 function build(){
   const gn=new Map(),adj=new Map();
-  const addNode=(id,lat,lng)=>{if(!gn.has(id)){gn.set(id,{lat,lng,ele:null});adj.set(id,[])}};
+  const addNode=(id,lat,lng)=>{if(!gn.has(id)){gn.set(id,{lat,lng});adj.set(id,[])}};
   const addEdge=(a,b,info)=>{const len=info.len??dist(gn.get(a),gn.get(b));const e={...info,len};adj.get(a).push({to:b,...e});adj.get(b).push({to:a,...e})};
   places=[];let ways=0,steps=0;
   for(const el of (osm?.elements||[])){
@@ -211,27 +211,12 @@ function build(){
       if(lat)places.push({name:tg.name,ref:tg.ref||'',building:!!tg.building,lat,lng})}
   }
   graph={nodes:gn,adj};
-  user.edges.forEach((e,i)=>{const a=nearest(e.a),b=nearest(e.b);if(!a||!b||a.id===b.id)return;addEdge(a.id,b.id,{len:e.len??dist(e.a,e.b),stairs:e.type==='stairs',kind:'knu',ref:i,climb:e.climb||0,aId:a.id})});
-  applyElevation();matchBuildings();
+  user.edges.forEach((e,i)=>{const a=nearest(e.a),b=nearest(e.b);if(!a||!b||a.id===b.id)return;addEdge(a.id,b.id,{len:e.len??dist(e.a,e.b),stairs:e.type==='stairs',kind:'knu',ref:i})});
+  matchBuildings();
   if(lmap){drawOsmWays();drawUser();drawOsmBuildings()}
-  status(`보행로 ${ways}개 · 계단 ${steps}개 · 교차점 ${gn.size}개 · 이름 있는 장소 ${places.length}곳 · 강원대생 길 ${user.edges.length}개 · 고도점 ${user.pins.length}개 · 고도 ${eleSource()||'없음'}`+(ways===0?'<br><b>보행로가 없습니다.</b> "다시 받기"를 눌러 보세요.':''));
+  status(`보행로 ${ways}개 · 계단 ${steps}개 · 교차점 ${gn.size}개 · 이름 있는 장소 ${places.length}곳 · 강원대생 길 ${user.edges.length}개`+(ways===0?'<br><b>보행로가 없습니다.</b> "다시 받기"를 눌러 보세요.':''));
 }
 function nearest(p){let best=null,bd=Infinity;if(!graph)return null;for(const [id,n] of graph.nodes){const d=dist(p,n);if(d<bd){bd=d;best=id}}return best?{id:best,d:bd}:null}
-// ── 지형 고도(자동): Open-Meteo 고도 API(Copernicus DEM 90m)로 캠퍼스를 20×20 격자로 받아 보간 ──
-const LS_DEM='knu_dem_v1',DEM_N=20;let dem=store.get(LS_DEM);
-async function fetchDem(){
-  const pts=[];for(let i=0;i<DEM_N;i++)for(let j=0;j<DEM_N;j++)pts.push([BBOX[0]+(BBOX[2]-BBOX[0])*i/(DEM_N-1),BBOX[1]+(BBOX[3]-BBOX[1])*j/(DEM_N-1)]);
-  try{const out=[];for(let k=0;k<pts.length;k+=100){const c=pts.slice(k,k+100);
-      const res=await fetch('https://api.open-meteo.com/v1/elevation?latitude='+c.map(p=>p[0].toFixed(5)).join(',')+'&longitude='+c.map(p=>p[1].toFixed(5)).join(','));
-      if(!res.ok)throw new Error('HTTP '+res.status);const j=await res.json();if(!Array.isArray(j.elevation)||j.elevation.length!==c.length)throw new Error('형식 오류');out.push(...j.elevation)}
-    dem={n:DEM_N,bbox:BBOX,ele:out};store.set(LS_DEM,dem);if(graph)build()}
-  catch(e){console.warn('고도 자료를 받지 못함',e)}
-}
-function demAt(p){if(!dem)return null;const n=dem.n,b=dem.bbox,fi=(p.lat-b[0])/(b[2]-b[0])*(n-1),fj=(p.lng-b[1])/(b[3]-b[1])*(n-1);
-  if(fi<0||fj<0||fi>n-1||fj>n-1)return null;const i=Math.min(n-2,Math.floor(fi)),j=Math.min(n-2,Math.floor(fj)),u=fi-i,v=fj-j,E=(a,c)=>dem.ele[a*n+c];
-  return E(i,j)*(1-u)*(1-v)+E(i+1,j)*u*(1-v)+E(i,j+1)*(1-u)*v+E(i+1,j+1)*u*v}
-function eleSource(){return user.pins.length>=2?'현장 고도점':dem?'지형 자료(90m 격자, 대략값)':null}
-function applyElevation(){const pins=user.pins;for(const n of graph.nodes.values()){if(pins.length<2){n.ele=demAt(n);continue}let w=0,s=0,ex=null;for(const p of pins){const d=dist(n,p);if(d<1){ex=p.ele;break}const k=1/(d*d);w+=k;s+=k*p.ele}n.ele=ex??s/w}}
 
 // ── 조원 건물 48곳 ↔ OSM 위치 연결 ──
 const norm=s=>String(s).replace(/강원대학교|강원대|국립/g,'').replace(/[\s()·\-_.,]/g,'').toLowerCase();
@@ -255,15 +240,14 @@ function lsq(X,y){const M=[[0,0,0],[0,0,0],[0,0,0]],v=[0,0,0];X.forEach((r,i)=>{
   return v.map((x,i)=>x/M[i][i])}
 
 // ── 비용과 경로 ──
-function params(){const v=id=>parseFloat(document.getElementById(id).value);return{speed:Math.max(.2,v('pSpeed')||1.3),climb:Math.max(0,v('pClimb')||0),stairs:Math.max(1,v('pStairs')||1)}}
-function ascent(from,to,e){if(e.kind==='knu'&&e.climb)return Math.max(0,from===e.aId?e.climb:-e.climb);const a=graph.nodes.get(from).ele,b=graph.nodes.get(to).ele;return a==null||b==null?0:Math.max(0,b-a)}
-function edgeTime(from,e,P){return e.len/P.speed*(e.stairs?P.stairs:1)+ascent(from,e.to,e)*P.climb}
+function params(){const v=id=>parseFloat(document.getElementById(id).value);return{speed:Math.max(.2,v('pSpeed')||1.3),stairs:Math.max(1,v('pStairs')||1)}}
+function edgeTime(from,e,P){return e.len/P.speed*(e.stairs?P.stairs:1)}
 function dijkstra(src,dst,cost){const d=new Map([[src,0]]),prev=new Map(),h=[[0,src]],done=new Set();
   const push=x=>{h.push(x);let i=h.length-1;while(i>0){const p=(i-1)>>1;if(h[p][0]<=h[i][0])break;[h[p],h[i]]=[h[i],h[p]];i=p}};
   const pop=()=>{const t=h[0],l=h.pop();if(h.length){h[0]=l;let i=0;for(;;){const a=2*i+1,b=a+1;let m=i;if(a<h.length&&h[a][0]<h[m][0])m=a;if(b<h.length&&h[b][0]<h[m][0])m=b;if(m===i)break;[h[m],h[i]]=[h[i],h[m]];i=m}}return t};
   while(h.length){const [c,u]=pop();if(done.has(u))continue;done.add(u);if(u===dst)break;for(const e of graph.adj.get(u)){const nc=c+cost(u,e);if(nc<(d.get(e.to)??Infinity)){d.set(e.to,nc);prev.set(e.to,{from:u,e});push([nc,e.to])}}}
   if(!d.has(dst))return null;const s=[];let cur=dst;while(cur!==src){const p=prev.get(cur);s.unshift({from:p.from,to:cur,e:p.e});cur=p.from}return s}
-function summarize(st,P){let len=0,time=0,climb=0,stairs=0;for(const s of st){len+=s.e.len;time+=edgeTime(s.from,s.e,P);climb+=ascent(s.from,s.to,s.e);if(s.e.stairs)stairs++}return{len,time,climb,stairs}}
+function summarize(st,P){let len=0,time=0,stairs=0;for(const s of st){len+=s.e.len;time+=edgeTime(s.from,s.e,P);if(s.e.stairs)stairs++}return{len,time,stairs}}
 
 function showRoute(){
   document.getElementById('sidebar').classList.add('open');
@@ -274,11 +258,11 @@ function showRoute(){
   setView('osm');layers.route.clearLayers();
   const na=nearest(pa),nb=nearest(pb);const warn=[];
   if(na.d>SNAP_WARN_M)warn.push(a.name+'에서 보행로까지 '+Math.round(na.d)+'m');if(nb.d>SNAP_WARN_M)warn.push(b.name+'에서 보행로까지 '+Math.round(nb.d)+'m');
-  const P=params(),sp=dijkstra(na.id,nb.id,(u,e)=>e.len),ep=dijkstra(na.id,nb.id,(u,e)=>edgeTime(u,e,P));
+  const P=params(),sp=dijkstra(na.id,nb.id,(u,e)=>e.kind==='knu'?Infinity:e.len),ep=dijkstra(na.id,nb.id,(u,e)=>edgeTime(u,e,P));
   const meta=document.getElementById('routeMeta');meta.classList.add('show');
   if(!sp||!ep){document.getElementById('routeSteps').textContent='두 장소를 잇는 보행로가 OSM에 없습니다. 팀 작업용 도구에서 강원대생 길을 추가해 연결해 보세요.';return}
-  const S=summarize(sp,P),E=summarize(ep,P),noEle=!eleSource()&&!user.edges.some(e=>e.climb);
-  const fill=(p,r)=>{document.getElementById(p+'D').textContent=fmtM(r.len);document.getElementById(p+'T').textContent=fmtT(r.time);document.getElementById(p+'C').textContent=noEle?'자료 없음':fmtM(r.climb);document.getElementById(p+'S').textContent=r.stairs+'곳'};
+  const S=summarize(sp,P),E=summarize(ep,P);
+  const fill=(p,r)=>{document.getElementById(p+'D').textContent=fmtM(r.len);document.getElementById(p+'T').textContent=fmtT(r.time);document.getElementById(p+'S').textContent=r.stairs+'곳'};
   fill('s',S);fill('e',E);
   const line=st=>{const pts=[graph.nodes.get(st[0].from)];st.forEach(s=>pts.push(graph.nodes.get(s.to)));return pts.map(n=>[n.lat,n.lng])};
   const same=sp.length===ep.length&&sp.every((s,i)=>s.to===ep[i].to);
@@ -286,8 +270,8 @@ function showRoute(){
   L.polyline(line(ep),{color:'#0878d1',weight:5,opacity:.95}).addTo(layers.route);
   [[pa,'#1677cc','출발 · '+a.name],[pb,'#e44e5e','도착 · '+b.name]].forEach(([p,c,t])=>L.circleMarker([p.lat,p.lng],{radius:9,color:'#fff',weight:3,fillColor:c,fillOpacity:1}).bindTooltip(t,{permanent:true,direction:'top',offset:[0,-8]}).addTo(layers.route));
   const used=[...new Set(sp.concat(ep).filter(s=>s.e.kind==='knu').map(s=>user.edges[s.e.ref]?.name).filter(Boolean))];
-  let note=same?'두 경로가 같습니다. 이 구간에서는 최단 경로가 곧 효율 경로입니다.':(Math.round(E.len-S.len)>0?`효율 경로는 ${Math.round(E.len-S.len)}m 더 걷지만`:'효율 경로는 거리가 같지만 오르막이 적어')+` 예상 시간이 ${Math.round(S.time-E.time)}초 짧습니다.`;
-  if(noEle)note+=' 아직 고도 자료가 없어 오르막은 반영되지 않았습니다.';else if(same&&!used.length)note+=' OSM 보행로 중에는 오르막을 피해 갈 우회로가 없다는 뜻입니다. 건물 안 통로 같은 강원대생 길을 추가하면 달라질 수 있습니다.';if(!noEle&&!user.pins.length)note+=' (고도는 90m 격자 지형 자료라 계단·짧은 경사는 잡지 못합니다.)';
+  let note=same?'두 경로가 같습니다. 이 구간에서는 지도 앱이 아는 최단 경로가 곧 효율 경로입니다.':(()=>{const dl=Math.round(E.len-S.len);return '효율 경로는 '+(dl>0?dl+'m 더 걷지만':dl<0?(-dl)+'m 덜 걷고':'거리가 같지만')+' 예상 시간이 '+Math.round(S.time-E.time)+'초 짧습니다.'})();
+  if(same&&!used.length)note+=' 이 구간에는 계단을 피하는 길이나 강원대생 길(건물 통과·지름길)이 없다는 뜻입니다.';
   if(used.length)note+=' 사용한 강원대생 길: '+used.join(', ')+'.';
   const est=[a,b].filter(d=>locState(d)==='est').map(d=>d.name);if(est.length)note+=' ⚠ '+est.join(', ')+' 위치는 추정값입니다.';
   if(warn.length)note+=' ⚠ '+warn.join(', ')+'.';
@@ -296,46 +280,42 @@ function showRoute(){
 }
 function clearRoute(){document.getElementById('routeMeta').classList.remove('show');if(layers)layers.route.clearLayers()}
 document.getElementById('routeBtn').onclick=showRoute;document.getElementById('routeTop').onclick=showRoute;document.getElementById('locate').onclick=showRoute;document.getElementById('routeClear').onclick=clearRoute;
-['pSpeed','pClimb','pStairs'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{if(document.getElementById('routeMeta').classList.contains('show'))showRoute()}));
+['pSpeed','pStairs'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{if(document.getElementById('routeMeta').classList.contains('show'))showRoute()}));
 
 // ── 실제 지도 그리기 ──
 function drawOsmWays(){if(!layers)return;layers.osm.clearLayers();for(const el of (osm?.elements||[])){const tg=el.tags||{};if(el.type==='way'&&tg.highway&&WALKABLE.has(tg.highway)&&el.geometry){const st=tg.highway==='steps';L.polyline(el.geometry.map(g=>[g.lat,g.lon]),{color:st?'#e67700':'#7f8fa3',weight:st?3:2,opacity:.55,dashArray:st?'2 4':null,interactive:false}).addTo(layers.osm)}}}
 function drawOsmBuildings(){if(!layers)return;layers.bld.clearLayers();data.forEach(d=>{const p=loc(d);if(!p)return;const c=['osm-label',d.id===startId?'start':'',d.id===endId?'end':'',p.src==='est'?'est':''].join(' ');
   L.marker([p.lat,p.lng],{icon:L.divIcon({className:'',html:'<span class="'+c+'">'+esc(d.id)+'</span>',iconSize:null})}).bindTooltip(d.name+' · '+LOC_TEXT[p.src]).on('click',()=>{if(mode)return;chooseLocation(d)}).addTo(layers.bld)})}
 function drawUser(){
-  const el=document.getElementById('edgeList'),pl=document.getElementById('pinList');el.innerHTML='';pl.innerHTML='';
+  const el=document.getElementById('edgeList');el.innerHTML='';
   if(layers)layers.user.clearLayers();
   user.edges.forEach((e,i)=>{if(layers)L.polyline([[e.a.lat,e.a.lng],[e.b.lat,e.b.lng]],{color:'#d9480f',weight:5,opacity:.9}).bindTooltip(e.name).addTo(layers.user);
-    const li=document.createElement('li');li.innerHTML='<span>🟧 '+esc(e.name)+' · '+(e.type==='indoor'?'건물 통과':e.type==='stairs'?'계단':'지름길')+(e.climb?' · 오르막 '+e.climb+'m':'')+'</span>';const b=document.createElement('button');b.textContent='삭제';b.onclick=()=>{user.edges.splice(i,1);saveUser()};li.append(b);el.append(li)});
-  user.pins.forEach((p,i)=>{if(layers)L.circleMarker([p.lat,p.lng],{radius:6,color:'#2b8a3e',fillOpacity:.8}).bindTooltip('고도 '+p.ele+'m').addTo(layers.user);
-    const li=document.createElement('li');li.innerHTML='<span>🟢 고도점 '+esc(p.ele)+'m</span>';const b=document.createElement('button');b.textContent='삭제';b.onclick=()=>{user.pins.splice(i,1);saveUser()};li.append(b);pl.append(li)});
+    const li=document.createElement('li');li.innerHTML='<span>🟧 '+esc(e.name)+' · '+(e.type==='indoor'?'건물 통과':e.type==='stairs'?'계단':'지름길')+'</span>';const b=document.createElement('button');b.textContent='삭제';b.onclick=()=>{user.edges.splice(i,1);saveUser()};li.append(b);el.append(li)});
 }
 function saveUser(){store.set(LS_USER,user);if(osm)build();else{matchBuildings();drawUser();drawOsmBuildings()}}
 
 // ── 현장 입력 ──
-const MODE_HINT={edge:'강원대생 길의 시작점을 누르세요',pin:'고도를 잰 지점을 누르세요',place:''};
+const MODE_HINT={edge:'강원대생 길의 시작점을 누르세요',place:''};
 function setMode(m){mode=m;pendingEdge=null;if(m!=='place')placing=null;document.querySelectorAll('.mode').forEach(x=>x.classList.toggle('on',x.dataset.mode===m));hint(m?MODE_HINT[m]:'')}
 document.querySelectorAll('.mode').forEach(b=>b.onclick=()=>{const m=mode===b.dataset.mode?null:b.dataset.mode;if(m)setView('osm');setMode(m)});
 function onMapClick(ev){
   const p={lat:ev.latlng.lat,lng:ev.latlng.lng};
   if(mode==='place'&&placing){user.places[placing.id]=p;const d=placing;setMode(null);saveUser();showInfo(d);toast(d.name+'의 실제 위치를 저장했어요. ('+p.lat.toFixed(6)+', '+p.lng.toFixed(6)+')');return}
-  if(mode==='pin'){const v=prompt('이 지점의 고도(m)를 입력하세요');if(v===null)return;const ele=parseFloat(v);if(isNaN(ele)){alert('숫자로 입력해 주세요.');return}user.pins.push({...p,ele});saveUser();return}
   if(mode==='edge'){if(!pendingEdge){pendingEdge=p;hint('끝점을 누르세요');return}
     const name=prompt('길 이름 (예: 6주 2층 통로)');if(!name){setMode(null);return}
     const type=(prompt('종류: 1=건물 통과, 2=계단, 3=지름길','1')||'1').trim();
-    const climb=parseFloat(prompt('시작점→끝점 방향 오르막(m). 내리막이면 음수, 모르면 비워 두세요','')||'0')||0;
     const real=parseFloat(prompt('실제 걸은 거리(m). 모르면 비워 두세요','')||'');
-    user.edges.push({name,type:type==='2'?'stairs':type==='3'?'path':'indoor',a:pendingEdge,b:p,climb,len:isNaN(real)?undefined:real});setMode(null);saveUser()}
+    user.edges.push({name,type:type==='2'?'stairs':type==='3'?'path':'indoor',a:pendingEdge,b:p,len:isNaN(real)?undefined:real});setMode(null);saveUser()}
 }
 document.getElementById('reloadOsm').onclick=fetchOsm;
 document.getElementById('exportOsm').onclick=()=>osm?download('knu_osm.json',osm):alert('받은 OSM 데이터가 없습니다.');
 document.getElementById('importOsm').onchange=e=>readFile(e.target,d=>{osm=d;store.set(LS_OSM,d);build()});
 document.getElementById('exportUser').onclick=()=>download('강원대생길_데이터.json',user);
-document.getElementById('importUser').onchange=e=>readFile(e.target,d=>{if(!d||!Array.isArray(d.edges)||!Array.isArray(d.pins)){alert('강원대생 길 파일 형식이 아닙니다.');return}
-  if(confirm('기존 입력에 합칠까요? (취소 = 덮어쓰기)')){user.edges.push(...d.edges);user.pins.push(...d.pins);Object.assign(user.places,d.places||{})}else user={edges:d.edges,pins:d.pins,places:d.places||{}};saveUser()});
+document.getElementById('importUser').onchange=e=>readFile(e.target,d=>{if(!d||!Array.isArray(d.edges)){alert('강원대생 길 파일 형식이 아닙니다.');return}
+  if(confirm('기존 입력에 합칠까요? (취소 = 덮어쓰기)')){user.edges.push(...d.edges);Object.assign(user.places,d.places||{})}else user={edges:d.edges,places:d.places||{}};saveUser()});
 
 // ── 시작 ──
 renderNodes();updateRouteLabels();drawUser();
-osm=store.get(LS_OSM);if(osm)build();else fetchOsm();if(!dem)fetchDem();
+osm=store.get(LS_OSM);if(osm)build();else fetchOsm();
 </script>
 </body></html>
